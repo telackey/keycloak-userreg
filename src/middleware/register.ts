@@ -14,15 +14,17 @@ export const RegisterMW : MiddlewareFunction = async (request, response, data, r
     return;
   }
 
-  const client = await getKeyCloakClient();
   const userRequest = {
     username: data.json.username,
+    enabled: true,
     groups: Config.TARGET_GROUPS,
     realm: Config.TARGET_REALM
   };
 
-  log.debug('Creating user:', userRequest);
   try {
+    const client = await getKeyCloakClient();
+
+    log.debug('Creating user:', userRequest);
     const result = await client.users.create(userRequest);
     log.debug('Created user:', result.id);
     const user = await client.users.findOne({ realm: userRequest.realm, id: result.id});
