@@ -7,7 +7,7 @@ import {Logger} from '../util/logger.js';
 const log = new Logger('cerc:keycloak-userreg:mw:register');
 
 export const RegisterMW : MiddlewareFunction = async (request, response, data, resolve, reject) =>{
-  if (!data?.json?.username) {
+  if (!data?.json?.email && !data?.json?.username) {
     log.error(data);
     log.error('Invalid request', request.body);
     reject(400);
@@ -15,8 +15,9 @@ export const RegisterMW : MiddlewareFunction = async (request, response, data, r
   }
 
   const userRequest = {
-    username: data.json.username,
-    enabled: true,
+    username: data.json.username || data.json.email,
+    email: data.json.email,
+    enabled: Config.CREATE_ENABLED,
     groups: Config.TARGET_GROUPS,
     realm: Config.TARGET_REALM
   };
@@ -31,6 +32,7 @@ export const RegisterMW : MiddlewareFunction = async (request, response, data, r
     log.debug(user);
     response.send({
       'username': user?.username,
+      'email': user?.email,
       'api-key': (user?.attributes as any)['api-key']
     });
     resolve();
